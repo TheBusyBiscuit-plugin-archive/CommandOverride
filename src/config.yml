@@ -1,0 +1,32 @@
+options:
+  auto-update: true
+  use-unknown-command-message: true
+  unknown-command-message: '&7Sorry, I do not recognize this Command! Please type &b/help &7for Help.'
+commands:
+  /example:
+  - '&aThis is an Example Message'
+  - '&6Feel free to ignore me ;)'
+  - '&eYou propably want to change something in the config here. Just set /example: []'
+  - '&cIf you do that this message will no longer show up.'
+  - command:/say You can also make players execute commands now
+aliases:
+  /whatstheversion: /version
+restricted:
+  /plugins: permission.plugins
+  message: '&4You do not have permission for this Command'
+cooldown:
+  /plugins: 1
+  message: '&4You have to wait &c%time% &4seconds before you can do that command again!'
+money-cost:
+  /plugins: 0.0
+  message: '&4You need &c$%money% &4to perform this command'
+gem-cost:
+  /plugins: 0
+  message: '&4You need &c%gems% Gems &4to perform this command'
+xp-cost:
+  /plugins: 0
+  message: '&4You need &c%levels% XP Levels &4to perform this command'
+arguments:
+  /tell:
+    min: 2
+    message: '&4Usage: &c /tell <player> <message>'
