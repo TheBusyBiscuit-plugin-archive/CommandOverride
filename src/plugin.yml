@@ -1,11 +1,11 @@
 name: CommandOverride
-version: 1.7
-author: mrCookieSlime
+version: 1.8
+author: mrCookieSlime, PixelSquared
 website: http://TheBusyBiscuit.github.io/
 
 main: me.mrCookieSlime.CommandOverride.main
 
-softdepend: [Vault, PrisonGems, CS-CoreLib]
+softdepend: [Vault, PrisonGems, CS-CoreLib, PlaceholderAPI]
 
 commands:
   reloadcommands:
