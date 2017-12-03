@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.mrCookieSlime.CSCoreLibPlugin.CSCoreLib;
 import me.mrCookieSlime.CSCoreLibPlugin.PluginUtils;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
@@ -35,6 +36,7 @@ public class main extends JavaPlugin {
 	Map<UUID, CommandCooldowns> cooldowns;
 	Economy economy = null;
 	Chat chat = null;
+	boolean papi = false;
 	
 	@Override
 	public void onEnable() {
@@ -133,6 +135,13 @@ public class main extends JavaPlugin {
 			if (getServer().getPluginManager().isPluginEnabled("Vault")) {
 				setupChat();
 				setupEconomy();
+			}
+			
+			if (getServer().getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+				
+				this.papi = true;
+				System.out.println("[CommandOverride] PlaceholderAPI hooked! Supported variables will be replaced.");
+				
 			}
 		}
 	}
@@ -728,6 +737,9 @@ public class main extends JavaPlugin {
 			String unicode = message.substring(message.indexOf("[") + 10, message.indexOf("]"));
 			message = message.replace("[unicode: " + unicode + "]", String.valueOf((char) Integer.parseInt(unicode, 16)));
 		}
+		
+		if (papi) message = PlaceholderAPI.setPlaceholders(p, message);
+		
 		return message;
 	}
 	
