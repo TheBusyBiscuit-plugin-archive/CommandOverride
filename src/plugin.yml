@@ -1,9 +1,11 @@
 name: CommandOverride
-version: 1.7
+version: ${project.version}
 author: mrCookieSlime
 website: http://TheBusyBiscuit.github.io/
 
 main: me.mrCookieSlime.CommandOverride.main
+
+api-version: 1.13
 
 softdepend: [Vault, PrisonGems, CS-CoreLib]
 

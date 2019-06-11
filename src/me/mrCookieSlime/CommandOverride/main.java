@@ -6,16 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import me.mrCookieSlime.CSCoreLibPlugin.CSCoreLib;
-import me.mrCookieSlime.CSCoreLibPlugin.PluginUtils;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.CSCoreLibPlugin.general.ListUtils;
-import me.mrCookieSlime.CSCoreLibPlugin.general.Math.DoubleHandler;
-import me.mrCookieSlime.CSCoreLibSetup.CSCoreLibLoader;
-import me.mrCookieSlime.PrisonGems.UpgradeManager;
-import net.milkbowl.vault.chat.Chat;
-import net.milkbowl.vault.economy.Economy;
-
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -29,9 +19,18 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import me.mrCookieSlime.CSCoreLibPlugin.CSCoreLib;
+import me.mrCookieSlime.CSCoreLibPlugin.PluginUtils;
+import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
+import me.mrCookieSlime.CSCoreLibPlugin.general.ListUtils;
+import me.mrCookieSlime.CSCoreLibPlugin.general.Math.DoubleHandler;
+import me.mrCookieSlime.CSCoreLibSetup.CSCoreLibLoader;
+import net.milkbowl.vault.chat.Chat;
+import net.milkbowl.vault.economy.Economy;
+
 public class main extends JavaPlugin {
 	
-	Config cfg, aliases, cost_money, cost_gems, cost_xp, arguments, cooldown, permissions;
+	Config cfg, aliases, cost_money, cost_xp, arguments, cooldown, permissions;
 	Map<UUID, CommandCooldowns> cooldowns;
 	Economy economy = null;
 	Chat chat = null;
@@ -52,7 +51,6 @@ public class main extends JavaPlugin {
 			
 			aliases = new Config("plugins/CommandOverride/aliases.yml");
 			cost_money = new Config("plugins/CommandOverride/cost_money.yml");
-			cost_gems = new Config("plugins/CommandOverride/cost_gems.yml");
 			cost_xp = new Config("plugins/CommandOverride/cost_xp.yml");
 			arguments = new Config("plugins/CommandOverride/arguments.yml");
 			cooldown = new Config("plugins/CommandOverride/cooldowns.yml");
@@ -89,14 +87,6 @@ public class main extends JavaPlugin {
 				}
 			}
 			
-			for (String key: cfg.getKeys("gem-cost")) {
-				if (key.startsWith("/")) {
-					cost_gems.setValue(key + ".cost", cfg.getInt("gem-cost." + key));
-					cost_gems.setValue(key + ".message", cfg.getString("gem-cost.message"));
-					cfg.setValue("gem-cost." + key, null);
-				}
-			}
-			
 			for (String key: cfg.getKeys("xp-cost")) {
 				if (key.startsWith("/")) {
 					cost_xp.setValue(key + ".cost", cfg.getInt("xp-cost." + key));
@@ -125,7 +115,6 @@ public class main extends JavaPlugin {
 			permissions.save();
 			cooldown.save();
 			arguments.save();
-			cost_gems.save();
 			cost_money.save();
 			cost_xp.save();
 			cfg.save();
@@ -231,12 +220,6 @@ public class main extends JavaPlugin {
 				return false;
 			}
 		}
-		if (cost_gems.contains(command + ".cost") && getServer().getPluginManager().isPluginEnabled("PrisonGems")) {
-			if (UpgradeManager.getManager().currency.getBalance(p) < cost_gems.getInt(command + ".cost")) {
-				if (cost_gems.getString(command + ".message") != null) p.sendMessage(ChatColor.translateAlternateColorCodes('&', cost_gems.getString(command + ".message").replace("%gems%", String.valueOf(cost_gems.getInt(command + ".cost"))).replace("%command%", command)));
-				return false;
-			}
-		}
 		if (cost_xp.contains(command + ".cost")) {
 			if (p.getLevel() < cost_xp.getInt(command + ".cost")) {
 				if (cost_xp.getString(command + ".message") != null) p.sendMessage(ChatColor.translateAlternateColorCodes('&', cost_xp.getString(command + ".message").replace("%levels%", String.valueOf(cost_xp.getInt(command + ".cost"))).replace("%command%", command)));
@@ -256,9 +239,6 @@ public class main extends JavaPlugin {
 		Player p = e.getPlayer();
 		if (cost_money.contains(command + ".cost") && getServer().getPluginManager().isPluginEnabled("Vault")) {
 			economy.withdrawPlayer(p, cost_money.getDouble(command + ".cost"));
-		}
-		if (cost_gems.contains(command + ".cost") && getServer().getPluginManager().isPluginEnabled("PrisonGems")) {
-			UpgradeManager.getManager().currency.removeBalance(p, cost_gems.getInt(command + ".cost"));
 		}
 		if (cost_xp.contains(command + ".cost")) {
 			p.setLevel(p.getLevel() - cost_xp.getInt(command + ".cost"));
@@ -716,9 +696,6 @@ public class main extends JavaPlugin {
 		while(message.contains("<ezbalance>")) {
 			message = message.replace("<ezbalance>", DoubleHandler.getFancyDouble(economy.getBalance(p)));
 		}
-		while(message.contains("<gems>")) {
-			message = message.replace("<gems>", String.valueOf(UpgradeManager.getManager().currency.getBalance(p)).split("\\.")[0]);
-		}
 		while(message.contains("<arg ")) {
 			int index = Integer.parseInt(message.substring(message.indexOf("<") + 5, message.indexOf(">")));
 			String arg = (e.getMessage().split(" ").length - 1) > index ? e.getMessage().split(" ")[index + 1]: "";
@@ -748,7 +725,6 @@ public class main extends JavaPlugin {
 				cfg.reload();
 				permissions.reload();
 				aliases.reload();
-				cost_gems.reload();
 				cost_money.reload();
 				cost_xp.reload();
 				cooldown.reload();
