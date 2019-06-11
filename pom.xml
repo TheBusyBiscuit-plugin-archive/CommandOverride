@@ -29,6 +29,10 @@
 			<id>placeholderapi-repo</id>
             <url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
+        <repository>
+  			<id>CodeMC</id>
+  			<url>https://repo.codemc.org/repository/maven-public</url>
+		</repository>
     </repositories>
 	<build>
         <finalName>${project.name} v${project.version}</finalName>
@@ -48,7 +52,41 @@
                     <include>plugin.yml</include>
                 </includes>
             </resource>
-        </resources>		
+        </resources>	
+        
+        <plugins>
+      		<plugin>
+        		<groupId>org.apache.maven.plugins</groupId>
+        		<artifactId>maven-shade-plugin</artifactId>
+        		<version>3.2.1</version>
+
+        		<configuration>
+          			<relocations>
+            			<relocation>
+              				<pattern>io.github.thebusybiscuit.cscorelib2</pattern>
+              				<shadedPattern>me.mrCookieSlime.CommandOverride.cscorelib2</shadedPattern>
+              				<includes>
+                  				<include>io.github.thebusybiscuit.cscorelib2.config.*</include>
+                  				<include>io.github.thebusybiscuit.cscorelib2.updater.*</include>
+              				</includes>
+            			</relocation>
+            			<relocation>
+            				<pattern>org.bstats</pattern>
+            				<shadedPattern>e.mrCookieSlime.CommandOverride.bstats</shadedPattern>
+          				</relocation>
+          			</relocations>
+        		</configuration>
+
+        		<executions>
+          			<execution>
+            			<phase>package</phase>
+            			<goals>
+              				<goal>shade</goal>
+            			</goals>
+          			</execution>
+        		</executions>
+      		</plugin>
+		</plugins>	
     </build>
     <dependencies>
         <dependency>
@@ -56,11 +94,18 @@
            	<artifactId>bukkit</artifactId>
             <version>1.14.2-R0.1-SNAPSHOT</version>
         </dependency>
-        <dependency>
-	        <groupId>com.github.TheBusyBiscuit</groupId>
-	        <artifactId>CS-CoreLib</artifactId>
-	        <version>v1.6.1</version>
-	    </dependency>
+		<dependency>
+      		<groupId>io.github.thebusybiscuit</groupId>
+      		<artifactId>CSCoreLib2</artifactId>
+      		<version>0.1</version>
+      		<scope>compile</scope>
+    	</dependency>
+    	<dependency>
+  			<groupId>org.bstats</groupId>
+  			<artifactId>bstats-bukkit</artifactId>
+  			<version>1.5</version>
+  			<scope>compile</scope>
+		</dependency>
 	    <dependency>
         	<groupId>com.github.MilkBowl</groupId>
         	<artifactId>VaultAPI</artifactId>

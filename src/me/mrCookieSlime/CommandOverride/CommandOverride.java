@@ -1,11 +1,14 @@
 package me.mrCookieSlime.CommandOverride;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -17,15 +20,10 @@ import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
+import io.github.thebusybiscuit.cscorelib2.config.Config;
+import io.github.thebusybiscuit.cscorelib2.updater.BukkitUpdater;
 import me.clip.placeholderapi.PlaceholderAPI;
-import me.mrCookieSlime.CSCoreLibPlugin.CSCoreLib;
-import me.mrCookieSlime.CSCoreLibPlugin.PluginUtils;
-import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
-import me.mrCookieSlime.CSCoreLibPlugin.general.ListUtils;
-import me.mrCookieSlime.CSCoreLibPlugin.general.Math.DoubleHandler;
-import me.mrCookieSlime.CSCoreLibSetup.CSCoreLibLoader;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 
@@ -46,105 +44,99 @@ public class CommandOverride extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
-		CSCoreLibLoader loader = new CSCoreLibLoader(this);
+		cfg = new Config(this);
+		new BukkitUpdater(this, getFile(), 83964);
+		new Metrics(this);
 		
-		if (loader.load()) {
-			PluginUtils utils = new PluginUtils(this);
-			utils.setupConfig();
-			utils.setupUpdater(83964, getFile());
-			utils.setupMetrics();
-			
-			cfg = utils.getConfig();
-			cooldowns = new HashMap<>();
-			new CommandListener(this);
-			
-			aliases = new Config("plugins/CommandOverride/aliases.yml");
-			cost_money = new Config("plugins/CommandOverride/cost_money.yml");
-			cost_xp = new Config("plugins/CommandOverride/cost_xp.yml");
-			arguments = new Config("plugins/CommandOverride/arguments.yml");
-			cooldown = new Config("plugins/CommandOverride/cooldowns.yml");
-			permissions = new Config("plugins/CommandOverride/permissions.yml");
-			
-			for (String key: cfg.getKeys("aliases")) {
-				if (key.startsWith("/")) {
-					aliases.setValue(key, cfg.getString("aliases." + key));
-					cfg.setValue("aliases." + key, null);
-				}
+		cooldowns = new HashMap<>();
+		new CommandListener(this);
+		
+		aliases = new Config("plugins/CommandOverride/aliases.yml");
+		cost_money = new Config("plugins/CommandOverride/cost_money.yml");
+		cost_xp = new Config("plugins/CommandOverride/cost_xp.yml");
+		arguments = new Config("plugins/CommandOverride/arguments.yml");
+		cooldown = new Config("plugins/CommandOverride/cooldowns.yml");
+		permissions = new Config("plugins/CommandOverride/permissions.yml");
+		
+		for (String key: cfg.getKeys("aliases")) {
+			if (key.startsWith("/")) {
+				aliases.setValue(key, cfg.getString("aliases." + key));
+				cfg.setValue("aliases." + key, null);
 			}
-			
-			for (String key: cfg.getKeys("restricted")) {
-				if (key.startsWith("/")) {
-					permissions.setValue(key + ".permission", cfg.getString("restricted." + key));
-					permissions.setValue(key + ".message", cfg.getString("restricted.message"));
-					cfg.setValue("restricted." + key, null);
-				}
+		}
+		
+		for (String key: cfg.getKeys("restricted")) {
+			if (key.startsWith("/")) {
+				permissions.setValue(key + ".permission", cfg.getString("restricted." + key));
+				permissions.setValue(key + ".message", cfg.getString("restricted.message"));
+				cfg.setValue("restricted." + key, null);
 			}
-			
-			for (String key: cfg.getKeys("cooldown")) {
-				if (key.startsWith("/")) {
-					cooldown.setValue(key + ".cooldown", cfg.getInt("cooldown." + key));
-					cooldown.setValue(key + ".message", cfg.getString("cooldown.message"));
-					cfg.setValue("cooldown." + key, null);
-				}
+		}
+		
+		for (String key: cfg.getKeys("cooldown")) {
+			if (key.startsWith("/")) {
+				cooldown.setValue(key + ".cooldown", cfg.getInt("cooldown." + key));
+				cooldown.setValue(key + ".message", cfg.getString("cooldown.message"));
+				cfg.setValue("cooldown." + key, null);
 			}
-			
-			for (String key: cfg.getKeys("money-cost")) {
-				if (key.startsWith("/")) {
-					cost_money.setValue(key + ".cost", cfg.getDouble("money-cost." + key));
-					cost_money.setValue(key + ".message", cfg.getString("money-cost.message"));
-					cfg.setValue("money-cost." + key, null);
-				}
+		}
+		
+		for (String key: cfg.getKeys("money-cost")) {
+			if (key.startsWith("/")) {
+				cost_money.setValue(key + ".cost", cfg.getDouble("money-cost." + key));
+				cost_money.setValue(key + ".message", cfg.getString("money-cost.message"));
+				cfg.setValue("money-cost." + key, null);
 			}
-			
-			for (String key: cfg.getKeys("xp-cost")) {
-				if (key.startsWith("/")) {
-					cost_xp.setValue(key + ".cost", cfg.getInt("xp-cost." + key));
-					cost_xp.setValue(key + ".message", cfg.getString("xp-cost.message"));
-					cfg.setValue("xp-cost." + key, null);
-				}
+		}
+		
+		for (String key: cfg.getKeys("xp-cost")) {
+			if (key.startsWith("/")) {
+				cost_xp.setValue(key + ".cost", cfg.getInt("xp-cost." + key));
+				cost_xp.setValue(key + ".message", cfg.getString("xp-cost.message"));
+				cfg.setValue("xp-cost." + key, null);
 			}
-			
-			for (String key: cfg.getKeys("arguments")) {
-				if (key.startsWith("/")) {
-					arguments.setValue(key + ".min", cfg.getString("arguments." + key + ".min"));
-					arguments.setValue(key + ".message", cfg.getString("arguments." + key + ".message"));
-					cfg.setValue("arguments." + key, null);
-				}
+		}
+		
+		for (String key: cfg.getKeys("arguments")) {
+			if (key.startsWith("/")) {
+				arguments.setValue(key + ".min", cfg.getString("arguments." + key + ".min"));
+				arguments.setValue(key + ".message", cfg.getString("arguments." + key + ".message"));
+				cfg.setValue("arguments." + key, null);
 			}
-			
-			cfg.setValue("restricted", null);
-			cfg.setValue("cooldown", null);
-			cfg.setValue("gem-cost", null);
-			cfg.setValue("money-cost", null);
-			cfg.setValue("xp-cost", null);
-			cfg.setValue("aliases", null);
-			cfg.setValue("arguments", null);
-			
-			aliases.save();
-			permissions.save();
-			cooldown.save();
-			arguments.save();
-			cost_money.save();
-			cost_xp.save();
-			cfg.save();
-			
-			if (getServer().getPluginManager().isPluginEnabled("Vault")) {
-				System.out.println("[CommandOverride] Found Vault - Hooking into it...");
-				setupChat();
-				setupEconomy();
-				isVaultInstalled = true;
-			}
-			else {
-				isVaultInstalled = false;
-			}
-			
-			if (getServer().getPluginManager().isPluginEnabled("PlaceHolderAPI")) {
-				System.out.println("[CommandOverride] Found PlaceHolderAPI - Hooking into it...");
-				isPlaceHolderAPIInstalled = true;
-			}
-			else {
-				isPlaceHolderAPIInstalled = false;
-			}
+		}
+		
+		cfg.setValue("restricted", null);
+		cfg.setValue("cooldown", null);
+		cfg.setValue("gem-cost", null);
+		cfg.setValue("money-cost", null);
+		cfg.setValue("xp-cost", null);
+		cfg.setValue("aliases", null);
+		cfg.setValue("arguments", null);
+		
+		aliases.save();
+		permissions.save();
+		cooldown.save();
+		arguments.save();
+		cost_money.save();
+		cost_xp.save();
+		cfg.save();
+		
+		if (getServer().getPluginManager().isPluginEnabled("Vault")) {
+			System.out.println("[CommandOverride] Found Vault - Hooking into it...");
+			setupChat();
+			setupEconomy();
+			isVaultInstalled = true;
+		}
+		else {
+			isVaultInstalled = false;
+		}
+		
+		if (getServer().getPluginManager().isPluginEnabled("PlaceHolderAPI")) {
+			System.out.println("[CommandOverride] Found PlaceHolderAPI - Hooking into it...");
+			isPlaceHolderAPIInstalled = true;
+		}
+		else {
+			isPlaceHolderAPIInstalled = false;
 		}
 	}
 	
@@ -291,14 +283,16 @@ public class CommandOverride extends JavaPlugin {
 				if (random.size() >= max) {
 					List<String> list = new ArrayList<String>();
 					
-					if (chances.isEmpty()) list = ListUtils.getRandomEntries(random, amount);
+					if (chances.isEmpty()) {
+						list = getRandomEntries(random, amount);
+					}
 					else {
 						for (int j = 0; j < amount; j++) {
 							int total = 0;
 							for (String command: chances.keySet()) {
 								total = total + chances.get(command);
 							}
-							int choice = CSCoreLib.randomizer().nextInt(total);
+							int choice = new Random().nextInt(total);
 							int subtotal = 0;
 							
 							String chosen = null;
@@ -463,14 +457,14 @@ public class CommandOverride extends JavaPlugin {
 				if (random.size() >= max) {
 					List<String> list = new ArrayList<String>();
 					
-					if (chances.isEmpty()) list = ListUtils.getRandomEntries(random, amount);
+					if (chances.isEmpty()) list = getRandomEntries(random, amount);
 					else {
 						for (int j = 0; j < amount; j++) {
 							int total = 0;
 							for (String command: chances.keySet()) {
 								total = total + chances.get(command);
 							}
-							int choice = CSCoreLib.randomizer().nextInt(total);
+							int choice = new Random().nextInt(total);
 							int subtotal = 0;
 							
 							String chosen = null;
@@ -499,13 +493,8 @@ public class CommandOverride extends JavaPlugin {
 					for (int j = i + 1; j < messages.size(); j++) {
 						queuedMessages.add(messages.get(j));
 					}
-					getServer().getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
-						
-						@Override
-						public void run() {
-							handleMessages(e, queuedMessages);
-						}
-						
+					getServer().getScheduler().runTaskLater(this, () -> {
+						handleMessages(e, queuedMessages);
 					}, delay * 20L);
 					break;
 				}
@@ -515,13 +504,8 @@ public class CommandOverride extends JavaPlugin {
 					for (int j = i + 1; j < messages.size(); j++) {
 						queuedMessages.add(messages.get(j));
 					}
-					getServer().getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
-						
-						@Override
-						public void run() {
-							handleMessages(e, queuedMessages);
-						}
-						
+					getServer().getScheduler().runTaskLater(this, () -> {
+						handleMessages(e, queuedMessages);
 					}, delay);
 					break;
 				}
@@ -594,6 +578,14 @@ public class CommandOverride extends JavaPlugin {
 	
 
 
+	public static <T> List<T> getRandomEntries(List<T> list, int random) {
+		final int size = list.size();
+		for (int i = 0; i < (size - random); i++) {
+			list.remove(new Random().nextInt(list.size()));
+		}
+		return list;
+	}
+
 	private String applyVariables(ServerCommandEvent e, String message) {
 		while(message.contains("[online: ")) {
 			String permission = message.substring(message.indexOf("[") + 9, message.indexOf("]"));
@@ -613,12 +605,12 @@ public class CommandOverride extends JavaPlugin {
 		}
 		while(message.contains("[rplayer ")) {
 			String permission = message.substring(message.indexOf("[") + 9, message.indexOf("]"));
-			List<String> names = new ArrayList<String>();
+			List<String> names = new ArrayList<>();
 			for (Player pl: Bukkit.getOnlinePlayers()) {
 				if (pl.hasPermission(permission)) names.add(pl.getName());
 			}
 			if (names.isEmpty()) message = message.replace("[rplayer " + permission + "]", "");
-			else message = message.replace("[rplayer " + permission + "]", (String) ListUtils.getRandomEntries(names, 1).get(0));
+			else message = message.replace("[rplayer " + permission + "]", names.get(new Random().nextInt(names.size())));
 		}
 		while(message.contains("<args ")) {
 			String args = message.substring(message.indexOf("<") + 6, message.indexOf(">"));
@@ -633,7 +625,7 @@ public class CommandOverride extends JavaPlugin {
 			message = message.replace("<player>", "CONSOLE");
 		}
 		while(message.contains("<rplayer>")) {
-			message = message.replace("<rplayer>", Bukkit.getOnlinePlayers().toArray(new Player[Bukkit.getOnlinePlayers().size()])[CSCoreLib.randomizer().nextInt(Bukkit.getOnlinePlayers().size())].getName());
+			message = message.replace("<rplayer>", Bukkit.getOnlinePlayers().toArray(new Player[Bukkit.getOnlinePlayers().size()])[new Random().nextInt(Bukkit.getOnlinePlayers().size())].getName());
 		}
 		while(message.contains("<players_online>")) {
 			message = message.replace("<players_online>", String.valueOf(Bukkit.getOnlinePlayers().size()));
@@ -680,7 +672,7 @@ public class CommandOverride extends JavaPlugin {
 				if (pl.hasPermission(permission)) names.add(pl.getName());
 			}
 			if (names.isEmpty()) message = message.replace("[rplayer " + permission + "]", "");
-			else message = message.replace("[rplayer " + permission + "]", (String) ListUtils.getRandomEntries(names, 1).get(0));
+			else message = message.replace("[rplayer " + permission + "]", (String) names.get(new Random().nextInt(names.size())));
 		}
 		while(message.contains("<args ")) {
 			String args = message.substring(message.indexOf("<") + 6, message.indexOf(">"));
@@ -695,7 +687,7 @@ public class CommandOverride extends JavaPlugin {
 			message = message.replace("<player>", p.getName());
 		}
 		while(message.contains("<rplayer>")) {
-			message = message.replace("<rplayer>", Bukkit.getOnlinePlayers().toArray(new Player[Bukkit.getOnlinePlayers().size()])[CSCoreLib.randomizer().nextInt(Bukkit.getOnlinePlayers().size())].getName());
+			message = message.replace("<rplayer>", Bukkit.getOnlinePlayers().toArray(new Player[Bukkit.getOnlinePlayers().size()])[new Random().nextInt(Bukkit.getOnlinePlayers().size())].getName());
 		}
 		while(message.contains("<players_online>")) {
 			message = message.replace("<players_online>", String.valueOf(Bukkit.getOnlinePlayers().size()));
@@ -724,7 +716,7 @@ public class CommandOverride extends JavaPlugin {
 				message = message.replace("<money>", String.valueOf(economy.getBalance(p)));
 			}
 			while(message.contains("<ezbalance>")) {
-				message = message.replace("<ezbalance>", DoubleHandler.getFancyDouble(economy.getBalance(p)));
+				message = message.replace("<ezbalance>", getFancyDouble(economy.getBalance(p)));
 			}
 		}
 		
@@ -760,6 +752,27 @@ public class CommandOverride extends JavaPlugin {
 			else sender.sendMessage(ChatColor.DARK_RED + "You do not have permission to perform this command");
 		}
 		return true;
+	}
+	
+	private String getFancyDouble(double d) {
+		DecimalFormat format = new DecimalFormat("##.##");
+		
+		double d2 = d / 1000000000000000d;
+		if (d2 > 1) return format.format(d2).replace(",", ".") + "Q";
+		
+		d2 = d / 1000000000000d;
+		if (d2 > 1) return format.format(d2).replace(",", ".") + "T";
+		
+		d2 = d / 1000000000d;
+		if (d2 > 1) return format.format(d2).replace(",", ".") + "B";
+		
+		d2 = d / 1000000d;
+		if (d2 > 1) return format.format(d2).replace(",", ".") + "M";
+		
+		d2 = d / 1000d;
+		if (d2 > 1) return format.format(d2).replace(",", ".") + "K";
+		
+		return format.format(d).replace(",", ".");
 	}
 	
 }
