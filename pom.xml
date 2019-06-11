@@ -61,14 +61,19 @@
         		<version>3.2.1</version>
 
         		<configuration>
+        			<filters>
+        				<filter>
+        					<artifact>com.github.thebusybiscuit:CS-CoreLib2</artifact>
+        					<includes>
+        						<include>**/cscorelib2/config/**</include>
+        						<include>**/cscorelib2/updater/**</include>
+                        	</includes>
+                    	</filter>
+                    </filters>
           			<relocations>
             			<relocation>
               				<pattern>io.github.thebusybiscuit.cscorelib2</pattern>
               				<shadedPattern>me.mrCookieSlime.CommandOverride.cscorelib2</shadedPattern>
-              				<includes>
-                  				<include>io.github.thebusybiscuit.cscorelib2.config.*</include>
-                  				<include>io.github.thebusybiscuit.cscorelib2.updater.*</include>
-              				</includes>
             			</relocation>
             			<relocation>
             				<pattern>org.bstats</pattern>
