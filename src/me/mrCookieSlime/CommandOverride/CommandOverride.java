@@ -19,6 +19,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import me.clip.placeholderapi.PlaceholderAPI;
 import me.mrCookieSlime.CSCoreLibPlugin.CSCoreLib;
 import me.mrCookieSlime.CSCoreLibPlugin.PluginUtils;
 import me.mrCookieSlime.CSCoreLibPlugin.Configuration.Config;
@@ -28,12 +29,20 @@ import me.mrCookieSlime.CSCoreLibSetup.CSCoreLibLoader;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.economy.Economy;
 
-public class main extends JavaPlugin {
+public class CommandOverride extends JavaPlugin {
 	
-	Config cfg, aliases, cost_money, cost_xp, arguments, cooldown, permissions;
-	Map<UUID, CommandCooldowns> cooldowns;
-	Economy economy = null;
-	Chat chat = null;
+	public Config cfg;
+	private Config aliases;
+	private Config cost_money;
+	private Config cost_xp;
+	private Config arguments;
+	private Config cooldown;
+	private Config permissions;
+	private Map<UUID, CommandCooldowns> cooldowns;
+	private Economy economy = null;
+	private Chat chat = null;
+	
+	private boolean isVaultInstalled, isPlaceHolderAPIInstalled;
 	
 	@Override
 	public void onEnable() {
@@ -46,7 +55,7 @@ public class main extends JavaPlugin {
 			utils.setupMetrics();
 			
 			cfg = utils.getConfig();
-			cooldowns = new HashMap<UUID, CommandCooldowns>();
+			cooldowns = new HashMap<>();
 			new CommandListener(this);
 			
 			aliases = new Config("plugins/CommandOverride/aliases.yml");
@@ -120,8 +129,21 @@ public class main extends JavaPlugin {
 			cfg.save();
 			
 			if (getServer().getPluginManager().isPluginEnabled("Vault")) {
+				System.out.println("[CommandOverride] Found Vault - Hooking into it...");
 				setupChat();
 				setupEconomy();
+				isVaultInstalled = true;
+			}
+			else {
+				isVaultInstalled = false;
+			}
+			
+			if (getServer().getPluginManager().isPluginEnabled("PlaceHolderAPI")) {
+				System.out.println("[CommandOverride] Found PlaceHolderAPI - Hooking into it...");
+				isPlaceHolderAPIInstalled = true;
+			}
+			else {
+				isPlaceHolderAPIInstalled = false;
 			}
 		}
 	}
@@ -245,9 +267,6 @@ public class main extends JavaPlugin {
 		}
 	}
 	
-
-	
-	@SuppressWarnings({ "unchecked", "deprecation" })
 	public void handleMessages(final ServerCommandEvent e, List<String> messages) {
 		List<String> random = null;
 		Map<String, Integer> chances = null;
@@ -300,22 +319,24 @@ public class main extends JavaPlugin {
 				}
 			}
 			else {
-				if (message.equalsIgnoreCase("BREAK")) break;
-				else if (message.startsWith("BREAK ")) breakpoint = i + Integer.parseInt(message.replace("BREAK ", ""));
+				if (message.equalsIgnoreCase("BREAK")) {
+					break;
+				}
+				else if (message.startsWith("BREAK ")) {
+					breakpoint = i + Integer.parseInt(message.replace("BREAK ", ""));
+				}
+				
 				if (message.startsWith("WAIT ")) {
 					int delay = Integer.parseInt(message.replace("WAIT ", ""));
 					final List<String> queuedMessages = new ArrayList<String>();
 					for (int j = i + 1; j < messages.size(); j++) {
 						queuedMessages.add(messages.get(j));
 					}
-					getServer().getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
-						
-						@Override
-						public void run() {
-							handleMessages(e, queuedMessages);
-						}
-						
+					
+					getServer().getScheduler().runTaskLater(this, () -> {
+						handleMessages(e, queuedMessages);
 					}, delay * 20L);
+					
 					break;
 				}
 				else if (message.startsWith("WAIT-T ")) {
@@ -324,14 +345,11 @@ public class main extends JavaPlugin {
 					for (int j = i + 1; j < messages.size(); j++) {
 						queuedMessages.add(messages.get(j));
 					}
-					getServer().getScheduler().scheduleSyncDelayedTask(this, new BukkitRunnable() {
-						
-						@Override
-						public void run() {
-							handleMessages(e, queuedMessages);
-						}
-						
-					}, delay);
+					
+					getServer().getScheduler().runTaskLater(this, () -> {
+						handleMessages(e, queuedMessages);
+					}, delay * 20L);
+					
 					break;
 				}
 				else {
@@ -378,8 +396,9 @@ public class main extends JavaPlugin {
 							if (player != null) {
 								try {
 									Sound sound = Sound.valueOf(args[2]);
-									if (sound != null) player.playSound(player.getLocation(), sound, Float.valueOf(args[3]), Float.valueOf(args[4]));
+									player.playSound(player.getLocation(), sound, Float.valueOf(args[3]), Float.valueOf(args[4]));
 								} catch(Exception x) {
+									System.err.println("[CommandOverride] Tried to play unknown Sound: " + args[2]);
 								}
 							}
 						}
@@ -389,8 +408,7 @@ public class main extends JavaPlugin {
 			}
 		}
 	}
-
-	@SuppressWarnings({ "deprecation", "unchecked" })
+	
 	public void handleMessages(final PlayerCommandPreprocessEvent e, List<String> messages) {
 		Player p = e.getPlayer();
 		List<String> random = null;
@@ -633,6 +651,7 @@ public class main extends JavaPlugin {
 			String unicode = message.substring(message.indexOf("[") + 10, message.indexOf("]"));
 			message = message.replace("[unicode: " + unicode + "]", String.valueOf((char) Integer.parseInt(unicode, 16)));
 		}
+		
 		return message;
 	}
 
@@ -684,18 +703,6 @@ public class main extends JavaPlugin {
 		while(message.contains("<players_max>")) {
 			message = message.replace("<players_max>", String.valueOf(Bukkit.getMaxPlayers()));
 		}
-		while(message.contains("<rank-prefix>")) {
-			message = message.replace("<rank-prefix>", chat.getPlayerPrefix(p));
-		}
-		while(message.contains("<rank-suffix>")) {
-			message = message.replace("<rank-suffix>", chat.getPlayerSuffix(p));
-		}
-		while(message.contains("<money>")) {
-			message = message.replace("<money>", String.valueOf(economy.getBalance(p)));
-		}
-		while(message.contains("<ezbalance>")) {
-			message = message.replace("<ezbalance>", DoubleHandler.getFancyDouble(economy.getBalance(p)));
-		}
 		while(message.contains("<arg ")) {
 			int index = Integer.parseInt(message.substring(message.indexOf("<") + 5, message.indexOf(">")));
 			String arg = (e.getMessage().split(" ").length - 1) > index ? e.getMessage().split(" ")[index + 1]: "";
@@ -705,6 +712,26 @@ public class main extends JavaPlugin {
 			String unicode = message.substring(message.indexOf("[") + 10, message.indexOf("]"));
 			message = message.replace("[unicode: " + unicode + "]", String.valueOf((char) Integer.parseInt(unicode, 16)));
 		}
+		
+		if (isVaultInstalled) {
+			while(message.contains("<rank-prefix>")) {
+				message = message.replace("<rank-prefix>", chat.getPlayerPrefix(p));
+			}
+			while(message.contains("<rank-suffix>")) {
+				message = message.replace("<rank-suffix>", chat.getPlayerSuffix(p));
+			}
+			while(message.contains("<money>")) {
+				message = message.replace("<money>", String.valueOf(economy.getBalance(p)));
+			}
+			while(message.contains("<ezbalance>")) {
+				message = message.replace("<ezbalance>", DoubleHandler.getFancyDouble(economy.getBalance(p)));
+			}
+		}
+		
+		if (isPlaceHolderAPIInstalled) {
+			message = PlaceholderAPI.setPlaceholders(p, message);
+		}
+		
 		return message;
 	}
 	

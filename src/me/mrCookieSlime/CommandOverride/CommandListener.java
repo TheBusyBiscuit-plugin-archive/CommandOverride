@@ -10,9 +10,9 @@ import org.bukkit.event.server.ServerCommandEvent;
 
 public class CommandListener implements Listener {
 	
-	main plugin;
+	CommandOverride plugin;
 	
-	public CommandListener(main plugin) {
+	public CommandListener(CommandOverride plugin) {
 		this.plugin = plugin;
 		plugin.getServer().getPluginManager().registerEvents(this, plugin);
 	}
