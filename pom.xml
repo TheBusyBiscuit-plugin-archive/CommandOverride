@@ -97,7 +97,7 @@
 		<dependency>
       		<groupId>io.github.thebusybiscuit</groupId>
       		<artifactId>CSCoreLib2</artifactId>
-      		<version>0.1</version>
+      		<version>0.2</version>
       		<scope>compile</scope>
     	</dependency>
     	<dependency>
