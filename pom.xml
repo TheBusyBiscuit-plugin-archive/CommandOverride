@@ -72,7 +72,7 @@
             			</relocation>
             			<relocation>
             				<pattern>org.bstats</pattern>
-            				<shadedPattern>e.mrCookieSlime.CommandOverride.bstats</shadedPattern>
+            				<shadedPattern>me.mrCookieSlime.CommandOverride.bstats</shadedPattern>
           				</relocation>
           			</relocations>
         		</configuration>
@@ -88,16 +88,19 @@
       		</plugin>
 		</plugins>	
     </build>
+    
     <dependencies>
         <dependency>
            	<groupId>org.bukkit</groupId>
            	<artifactId>bukkit</artifactId>
             <version>1.14.2-R0.1-SNAPSHOT</version>
+         	<scope>provided</scope>
         </dependency>
 		<dependency>
       		<groupId>com.github.thebusybiscuit</groupId>
       		<artifactId>CS-CoreLib2</artifactId>
       		<version>0.2.1</version>
+         	<scope>compile</scope>
     	</dependency>
     	<dependency>
   			<groupId>org.bstats</groupId>
