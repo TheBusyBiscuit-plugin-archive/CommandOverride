@@ -1,4 +1,4 @@
-package me.mrCookieSlime.CommandOverride;
+package io.github.thebusybiscuit.commandoverride;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;

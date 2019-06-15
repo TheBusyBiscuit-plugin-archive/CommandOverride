@@ -1,4 +1,4 @@
-package me.mrCookieSlime.CommandOverride;
+package io.github.thebusybiscuit.commandoverride;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;

@@ -3,11 +3,10 @@ version: ${project.version}
 author: mrCookieSlime
 website: http://TheBusyBiscuit.github.io/
 
-main: me.mrCookieSlime.CommandOverride.CommandOverride
-
+main: io.github.thebusybiscuit.commandoverride.CommandOverride
 api-version: 1.13
 
-softdepend: [Vault, PlaceholderAPI, CS-CoreLib]
+softdepend: [Vault, PlaceholderAPI]
 
 commands:
   reloadcommands:

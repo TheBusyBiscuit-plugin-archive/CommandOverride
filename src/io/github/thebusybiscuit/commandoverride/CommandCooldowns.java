@@ -1,4 +1,4 @@
-package me.mrCookieSlime.CommandOverride;
+package io.github.thebusybiscuit.commandoverride;
 
 import java.util.ArrayList;
 import java.util.List;
