@@ -45,7 +45,7 @@ public class CommandOverride extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		cfg = new Config(this);
-		new BukkitUpdater(this, getFile(), 83964);
+		new BukkitUpdater(this, getFile(), 83964).start();;
 		new Metrics(this);
 		
 		cooldowns = new HashMap<>();
