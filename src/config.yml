@@ -20,9 +20,6 @@ cooldown:
 money-cost:
   /plugins: 0.0
   message: '&4You need &c$%money% &4to perform this command'
-gem-cost:
-  /plugins: 0
-  message: '&4You need &c%gems% Gems &4to perform this command'
 xp-cost:
   /plugins: 0
   message: '&4You need &c%levels% XP Levels &4to perform this command'
